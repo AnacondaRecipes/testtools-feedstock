@@ -23,6 +23,8 @@ requirements:
     - python
     - setuptools
     - pbr >=0.11
+    - pip
+    - wheel
 
   run:
     - python
@@ -31,6 +33,10 @@ requirements:
 test:
   imports:
     - testtools
+  requires:
+    - pip
+  commands:
+    - pip check
 
 about:
   home: https://github.com/testing-cabal/testtools
