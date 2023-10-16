@@ -1,45 +1,45 @@
 {% set name = "testtools" %}
-{% set version = "2.4.0" %}
-{% set bundle = "tar.gz" %}
-{% set hash_type = "sha256" %}
-{% set hash = "64c974a6cca4385d05f4bbfa2deca1c39ce88ede31c3448bee86a7259a9a61c8" %}
-{% set build = 1 %}
+{% set version = "2.6.0" %}
 
 package:
-  name: {{ name }}
+  name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.{{ bundle }}
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.{{ bundle }}
-  {{ hash_type }}: {{ hash }}
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/testtools-{{ version }}.tar.gz
+  sha256: 28b65e14c0f2d3ecbbfb5f55c9dcde5e4faa80ac16a37a823909a1fe3cbcb30a
 
 build:
-  number: {{ build }}
-  script: pip install . --no-deps --no-build-isolation --ignore-installed --no-cache-dir -vv
+  number: 0
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --ignore-installed --no-cache-dir -vv
 
 requirements:
   host:
     - python
     - setuptools
-    - pbr >=0.11
-
+    - pip
+    - wheel
+    - pbr
   run:
     - python
-    - pbr >=0.11
+    - pbr
 
 test:
   imports:
     - testtools
+  requires:
+    - pip
+  commands:
+    - pip check
 
 about:
   home: https://github.com/testing-cabal/testtools
   license_file: LICENSE
   license: MIT
   license_family: MIT
-  summary: 'Extensions to the Python standard library unit testing framework'
+  summary: Extensions to the Python standard library unit testing framework
   dev_url: https://github.com/testing-cabal/testtools
-  doc_url: https://testtools.readthedocs.io/en/latest/
+  doc_url: https://testtools.readthedocs.io
 
 extra:
   recipe-maintainers:
