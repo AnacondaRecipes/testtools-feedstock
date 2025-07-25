@@ -44,6 +44,14 @@ requirements:
     "testtools/tests/test_testsuite.py"
 ] %}
 
+# [win-64]
+# with open(path, "rb") as stream:
+# PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpkbmxjt49'
+{% set skip_keywords = [
+    "test_from_file_with_simple_seek",
+    "test_from_file_with_whence_seek"
+] %}
+
 test:
   requires:
     - pip
@@ -65,7 +73,7 @@ test:
     - pip check
     - python -c "import testtools; print(testtools.__version__)"
     - pip install testscenarios
-    - pytest -v {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %}
+    - pytest -v {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ skip_keywords | join(' or ') }})"
 
 about:
   home: https://github.com/testing-cabal/testtools
