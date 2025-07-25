@@ -1,36 +1,71 @@
 {% set name = "testtools" %}
-{% set version = "2.4.0" %}
-{% set bundle = "tar.gz" %}
-{% set hash_type = "sha256" %}
-{% set hash = "64c974a6cca4385d05f4bbfa2deca1c39ce88ede31c3448bee86a7259a9a61c8" %}
-{% set build = 0 %}
+{% set version = "2.7.2" %}
 
 package:
-  name: {{ name }}
+  name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.{{ bundle }}
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.{{ bundle }}
-  {{ hash_type }}: {{ hash }}
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/testtools-{{ version }}.tar.gz
+  sha256: 5be5bbc1f0fa0f8b60aca6ceec07845d41d0c475cf445bfadb4d2c45ec397ea3
 
 build:
-  number: {{ build }}
-  script: python setup.py install --single-version-externally-managed --record=record.txt
+  number: 0
+  skip: true  # [py<38]
+  script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --ignore-installed --no-cache-dir -vv
 
 requirements:
   host:
+    - pip
     - python
-    - setuptools
-    - pbr >=0.11
-
+    - setuptools >=61
+    - hatchling
+    - hatch-vcs
+    - wheel
   run:
     - python
-    - pbr >=0.11
+  run_constrained:
+    - fixtures >=2.0
+    - twisted >=22.2
+
+# =======================
+# Test configuration
+# =======================
+{% set test_root = "testtools/tests" %}
+
+# - Skip twisted
+# - Skip fixtures
+# - Others: assertion/runtime error
+{% set skip_files = [
+    "testtools/tests/twistedsupport",
+    "testtools/tests/matchers",
+    "testtools/tests/test_testcase.py",
+    "testtools/tests/test_testresult.py",
+    "testtools/tests/test_testsuite.py"
+] %}
 
 test:
+  requires:
+    - pip
+    - pytest
+  source_files:
+    - {{ test_root }}
   imports:
     - testtools
+    - testtools.assertions
+    - testtools.compat
+    - testtools.content
+    - testtools.content_type
+    - testtools.helpers
+    - testtools.matchers
+    - testtools.monkey
+    - testtools.runtest
+    - testtools.tags
+  commands:
+    - pip check
+    - python -c "import testtools; print(testtools.__version__)"
+    - pip install testscenarios
+    - pytest -v {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %}
 
 about:
   home: https://github.com/testing-cabal/testtools
@@ -38,6 +73,10 @@ about:
   license: MIT
   license_family: MIT
   summary: 'Extensions to the Python standard library unit testing framework'
+  description: |
+    testtools is a set of extensions to the Python standard library's unit testing 
+    framework. These extensions have been derived from years of experience 
+    with unit testing in Python and come from many different sources.
   dev_url: https://github.com/testing-cabal/testtools
   doc_url: https://testtools.readthedocs.io/en/latest/
 
@@ -45,3 +84,5 @@ extra:
   recipe-maintainers:
     - anguslees
     - pmlandwehr
+  skip-lints:
+    - documentation_specifies_language
