@@ -34,49 +34,62 @@ requirements:
 {% set test_root = "testtools/tests" %}
 
 # This tests is not support to run directly by pyetst, so that we have to disable some tests.
+# Matcher provides the abstract API that all matchers need to implement, they
+# have to be skiped.
 {% set skip_files = [
-    # Matcher provides the abstract API that all matchers need to implement, they
-    # have to be skiped.
     "testtools/tests/matchers"
 ] %}
 
-{% set skip_keywords = [
-    # These are abstract classes that pytest tries to run, so we skip them
+# These are abstract classes that pytest tries to run, so we skip them
+{% set skip_abstract_classes = [
     "TestStreamResultContract",
     "TestControlContract",
     "TestExtendedToStreamDecorator",
-    "TestMatchersInterface",
+    "TestMatchersInterface"
+] %}
 
-    # Broken test, self.case not declared
-    "TestRunTwiceNondeterministic",
-    
-    # Hardcoded value module atribute, running by pytest this value is different
-    "TestAttributes",
+# Broken test, self.case not declared
+{% set skip_broken_tests = [
+    "TestRunTwiceNondeterministic"
+] %}
 
-    # Sample.test_method1.id() the path is different by running pytest, 
-    # it has different module path, so that test failed
+# Hardcoded value module atribute, running by pytest this value is different
+{% set skip_env_dependent = [
+    "TestAttributes"
+] %}
+
+# Sample.test_method1.id() the path is different by running pytest, 
+# it has different module path, so that test failed
+{% set skip_path_sensitive = [
     "TestConcurrentStreamTestSuiteRun",
-    "TestAsynchronousDeferredRunTest",
+    "TestAsynchronousDeferredRunTest"
+] %}
 
-    # Not cross platform tests, expectd value which is differ from other python version and OS
+# Not cross platform tests, expectd value which is differ from other python version and OS
+{% set skip_non_cross_platform = [
     "TestNonAsciiResults",
     "TestNonAsciiResultsWithUnittest"
 ] %}
 
 # Win-64 Skip tests
-{% set skip_keywords_win64 = [
-    # Posix paths hardcoded for tests in src, so we skip them
+# Posix paths hardcoded for tests in src, so we skip them
+{% set skip_posix_path_tests_win64 = [
     "test_run_list_failed_import",
     "test_setUpCalledTwice",
     "test_setUpNotCalled",
     "test_tearDownCalledTwice",
-    "test_tearDownNotCalled",
+    "test_tearDownNotCalled"
+] %}
 
-    # with open(path, "rb") as stream:
-    # PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpkbmxjt49'
+# PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpkbmxjt49'
+{% set skip_permission_error_tests_win64 = [
     "test_from_file_with_simple_seek",
     "test_from_file_with_whence_seek"
 ] %}
+
+# Merge all
+{% set skip_keywords = skip_abstract_classes + skip_broken_tests + skip_env_dependent + skip_path_sensitive + skip_non_cross_platform %}
+{% set skip_keywords_win64 = skip_posix_path_tests_win64 + skip_permission_error_tests_win64 %}
 
 test:
   requires:
