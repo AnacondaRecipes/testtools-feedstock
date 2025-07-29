@@ -18,15 +18,10 @@ requirements:
   host:
     - pip
     - python
-    - setuptools >=61
     - hatchling
     - hatch-vcs
-    - wheel
   run:
     - python
-  run_constrained:
-    - fixtures >=2.0
-    - twisted >=22.2
 
 # =======================
 # Test configuration
