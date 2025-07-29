@@ -6,7 +6,7 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/testtools-{{ version }}.tar.gz
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: 5be5bbc1f0fa0f8b60aca6ceec07845d41d0c475cf445bfadb4d2c45ec397ea3
 
 build:
@@ -33,29 +33,47 @@ requirements:
 # =======================
 {% set test_root = "testtools/tests" %}
 
-# - Skip twisted
-# - Skip fixtures
-# - Others: assertion/runtime error
+# This tests is not support to run directly by pyetst, so that we have to disable some tests.
 {% set skip_files = [
-    "testtools/tests/twistedsupport",
-    "testtools/tests/matchers",
-    "testtools/tests/test_testcase.py",
-    "testtools/tests/test_testresult.py",
-    "testtools/tests/test_testsuite.py"
+    # Matcher provides the abstract API that all matchers need to implement, they
+    # have to be skiped.
+    "testtools/tests/matchers"
 ] %}
 
-# [win-64]
-# with open(path, "rb") as stream:
-# PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpkbmxjt49'
 {% set skip_keywords = [
+    # [win-64]
+    # with open(path, "rb") as stream:
+    # PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpkbmxjt49'
     "test_from_file_with_simple_seek",
-    "test_from_file_with_whence_seek"
+    "test_from_file_with_whence_seek",
+
+    # These are abstract classes that pytest tries to run, so we skip them
+    "TestStreamResultContract",
+    "TestControlContract",
+    "TestExtendedToStreamDecorator",
+    "TestMatchersInterface",
+
+    # Broken test, self.case not declared
+    "TestRunTwiceNondeterministic",
+    
+    # Hardcoded value module atribute, running by pytest this value is different
+    "TestAttributes",
+
+    # Sample.test_method1.id() the path is different by running pytest, 
+    # it has different module path, so that test failed
+    "TestConcurrentStreamTestSuiteRun",
+    "TestAsynchronousDeferredRunTest",
+
+    # Not cross platform tests, expectd value which is differ from other python version and OS
+    "TestNonAsciiResults",
+    "TestNonAsciiResultsWithUnittest"
 ] %}
 
 test:
   requires:
     - pip
     - pytest
+    - twisted
   source_files:
     - {{ test_root }}
   imports:
@@ -71,26 +89,24 @@ test:
     - testtools.tags
   commands:
     - pip check
-    - python -c "import testtools; print(testtools.__version__)"
-    - pip install testscenarios
-    - pytest -v {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ skip_keywords | join(' or ') }})"
+    - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    - pip install fixtures testscenarios
+    - pytest -v --tb=short {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ skip_keywords | join(' or ') }})"
 
 about:
   home: https://github.com/testing-cabal/testtools
   license_file: LICENSE
   license: MIT
   license_family: MIT
-  summary: 'Extensions to the Python standard library unit testing framework'
+  summary: Extensions to the Python standard library unit testing framework
   description: |
     testtools is a set of extensions to the Python standard library's unit testing 
     framework. These extensions have been derived from years of experience 
     with unit testing in Python and come from many different sources.
   dev_url: https://github.com/testing-cabal/testtools
-  doc_url: https://testtools.readthedocs.io/en/latest/
+  doc_url: https://testtools.readthedocs.io
 
 extra:
   recipe-maintainers:
     - anguslees
     - pmlandwehr
-  skip-lints:
-    - documentation_specifies_language
