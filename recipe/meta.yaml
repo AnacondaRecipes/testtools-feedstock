@@ -28,7 +28,7 @@ requirements:
 # =======================
 {% set test_root = "testtools/tests" %}
 
-# This tests is not support to run directly by pyetst, so that we have to disable some tests.
+# These tests are not supported to run directly by pytest, so that we have to disable some tests.
 # Matcher provides the abstract API that all matchers need to implement, they
 # have to be skiped.
 {% set skip_files = [
