@@ -1,5 +1,42 @@
 {% set name = "testtools" %}
-{% set version = "2.7.2" %}
+{% set version = "2.8.3" %}
+{% set test_root = "testtools/tests" %}
+{% set skip_files = [
+  "testtools/tests/matchers"
+] %}
+{% set skip_abstract_classes = [
+  "TestStreamResultContract",
+  "TestControlContract",
+  "TestExtendedToStreamDecorator",
+  "TestMatchersInterface"
+] %}
+{% set skip_broken_tests = [
+  "TestRunTwiceNondeterministic"
+] %}
+{% set skip_env_dependent = [
+  "TestAttributes"
+] %}
+{% set skip_path_sensitive = [
+  "TestConcurrentStreamTestSuiteRun",
+  "TestAsynchronousDeferredRunTest"
+] %}
+{% set skip_non_cross_platform = [
+  "TestNonAsciiResults",
+  "TestNonAsciiResultsWithUnittest"
+] %}
+{% set skip_posix_path_tests_win64 = [
+  "test_run_list_failed_import",
+  "test_setUpCalledTwice",
+  "test_setUpNotCalled",
+  "test_tearDownCalledTwice",
+  "test_tearDownNotCalled"
+] %}
+{% set skip_permission_error_tests_win64 = [
+  "test_from_file_with_simple_seek",
+  "test_from_file_with_whence_seek"
+] %}
+{% set skip_keywords = skip_abstract_classes + skip_broken_tests + skip_env_dependent + skip_path_sensitive + skip_non_cross_platform %}
+{% set skip_keywords_win64 = skip_posix_path_tests_win64 + skip_permission_error_tests_win64 %}
 
 package:
   name: {{ name|lower }}
@@ -7,11 +44,11 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 5be5bbc1f0fa0f8b60aca6ceec07845d41d0c475cf445bfadb4d2c45ec397ea3
+  sha256: 3b54b543a7583a35f65538b1d36a327fc34943a26bb839bcbe4b2c5e085aa939
 
 build:
   number: 0
-  skip: true  # [py<38]
+  skip: true  # [py<310]
   script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --ignore-installed --no-cache-dir -vv
 
 requirements:
@@ -20,72 +57,26 @@ requirements:
     - python
     - hatchling
     - hatch-vcs
+    - hatch_vcs
   run:
     - python
 
 # =======================
 # Test configuration
 # =======================
-{% set test_root = "testtools/tests" %}
-
 # These tests are not supported to run directly by pytest, so that we have to disable some tests.
 # Matcher provides the abstract API that all matchers need to implement, they
 # have to be skiped.
-{% set skip_files = [
-    "testtools/tests/matchers"
-] %}
-
 # These are abstract classes that pytest tries to run, so we skip them
-{% set skip_abstract_classes = [
-    "TestStreamResultContract",
-    "TestControlContract",
-    "TestExtendedToStreamDecorator",
-    "TestMatchersInterface"
-] %}
-
 # Broken test, self.case not declared
-{% set skip_broken_tests = [
-    "TestRunTwiceNondeterministic"
-] %}
-
 # Hardcoded value module atribute, running by pytest this value is different
-{% set skip_env_dependent = [
-    "TestAttributes"
-] %}
-
-# Sample.test_method1.id() the path is different by running pytest, 
+# Sample.test_method1.id() the path is different by running pytest,
 # it has different module path, so that test failed
-{% set skip_path_sensitive = [
-    "TestConcurrentStreamTestSuiteRun",
-    "TestAsynchronousDeferredRunTest"
-] %}
-
 # Not cross platform tests, expectd value which is differ from other python version and OS
-{% set skip_non_cross_platform = [
-    "TestNonAsciiResults",
-    "TestNonAsciiResultsWithUnittest"
-] %}
-
 # Win-64 Skip tests
 # Posix paths hardcoded for tests in src, so we skip them
-{% set skip_posix_path_tests_win64 = [
-    "test_run_list_failed_import",
-    "test_setUpCalledTwice",
-    "test_setUpNotCalled",
-    "test_tearDownCalledTwice",
-    "test_tearDownNotCalled"
-] %}
-
 # PermissionError: [Errno 13] Permission denied: 'C:\\cygwin64\\tmp\\tmpkbmxjt49'
-{% set skip_permission_error_tests_win64 = [
-    "test_from_file_with_simple_seek",
-    "test_from_file_with_whence_seek"
-] %}
-
 # Merge all
-{% set skip_keywords = skip_abstract_classes + skip_broken_tests + skip_env_dependent + skip_path_sensitive + skip_non_cross_platform %}
-{% set skip_keywords_win64 = skip_posix_path_tests_win64 + skip_permission_error_tests_win64 %}
-
 test:
   requires:
     - pip
@@ -118,8 +109,8 @@ about:
   license_family: MIT
   summary: Extensions to the Python standard library unit testing framework
   description: |
-    testtools is a set of extensions to the Python standard library's unit testing 
-    framework. These extensions have been derived from years of experience 
+    testtools is a set of extensions to the Python standard library's unit testing
+    framework. These extensions have been derived from years of experience
     with unit testing in Python and come from many different sources.
   dev_url: https://github.com/testing-cabal/testtools
   doc_url: https://testtools.readthedocs.io
