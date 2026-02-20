@@ -23,11 +23,6 @@ requirements:
   run:
     - python
 
-# =======================
-# Test configuration
-# =======================
-{% set test_root = "testtools/tests" %}
-
 # These tests are not supported to run directly by pytest, so that we have to disable some tests.
 # Matcher provides the abstract API that all matchers need to implement, they
 # have to be skiped.
@@ -87,12 +82,12 @@ requirements:
 {% set skip_keywords_win64 = skip_posix_path_tests_win64 + skip_permission_error_tests_win64 %}
 
 test:
+  source_files:
+    - tests
   requires:
     - pip
     - pytest
     - twisted
-  source_files:
-    - {{ test_root }}
   imports:
     - testtools
     - testtools.assertions
@@ -108,8 +103,8 @@ test:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
     - pip install fixtures testscenarios
-    - pytest -v --tb=short {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ skip_keywords | join(' or ') }})"  # [not win]
-    - pytest -v --tb=short {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ (skip_keywords + skip_keywords_win64) | join(' or ') }})"  # [win]
+    - pytest -v --tb=short tests/{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ skip_keywords | join(' or ') }})"  # [not win]
+    - pytest -v --tb=short tests/{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ (skip_keywords + skip_keywords_win64) | join(' or ') }})"  # [win]
 
 about:
   home: https://github.com/testing-cabal/testtools
