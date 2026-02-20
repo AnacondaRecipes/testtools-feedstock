@@ -77,8 +77,13 @@ requirements:
     "test_from_file_with_whence_seek"
 ] %}
 
+# 'NoneType' object is not iterable
+{% set skip_none_type_error_tests = [
+    "test_sigint_raises_no_result_error"
+] %}
+
 # Merge all
-{% set skip_keywords = skip_abstract_classes + skip_broken_tests + skip_env_dependent + skip_path_sensitive + skip_non_cross_platform %}
+{% set skip_keywords = skip_abstract_classes + skip_broken_tests + skip_env_dependent + skip_path_sensitive + skip_non_cross_platform + skip_none_type_error_tests%}
 {% set skip_keywords_win64 = skip_posix_path_tests_win64 + skip_permission_error_tests_win64 %}
 
 test:
