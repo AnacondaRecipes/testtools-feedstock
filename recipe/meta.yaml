@@ -1,5 +1,5 @@
 {% set name = "testtools" %}
-{% set version = "2.7.2" %}
+{% set version = "2.8.2" %}
 
 package:
   name: {{ name|lower }}
@@ -7,12 +7,12 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 5be5bbc1f0fa0f8b60aca6ceec07845d41d0c475cf445bfadb4d2c45ec397ea3
+  sha256: b5c73332456ff54152062d47a58bc4f15f8e23514afec4e84775af124fb7db43
 
 build:
   number: 0
-  skip: true  # [py<38]
   script: {{ PYTHON }} -m pip install . --no-deps --no-build-isolation --ignore-installed --no-cache-dir -vv
+  skip: true  # [py<310]
 
 requirements:
   host:
@@ -22,11 +22,6 @@ requirements:
     - hatch-vcs
   run:
     - python
-
-# =======================
-# Test configuration
-# =======================
-{% set test_root = "testtools/tests" %}
 
 # These tests are not supported to run directly by pytest, so that we have to disable some tests.
 # Matcher provides the abstract API that all matchers need to implement, they
@@ -82,17 +77,22 @@ requirements:
     "test_from_file_with_whence_seek"
 ] %}
 
+# 'NoneType' object is not iterable
+{% set skip_none_type_error_tests = [
+    "test_sigint_raises_no_result_error"
+] %}
+
 # Merge all
-{% set skip_keywords = skip_abstract_classes + skip_broken_tests + skip_env_dependent + skip_path_sensitive + skip_non_cross_platform %}
+{% set skip_keywords = skip_abstract_classes + skip_broken_tests + skip_env_dependent + skip_path_sensitive + skip_non_cross_platform + skip_none_type_error_tests%}
 {% set skip_keywords_win64 = skip_posix_path_tests_win64 + skip_permission_error_tests_win64 %}
 
 test:
+  source_files:
+    - tests
   requires:
     - pip
     - pytest
     - twisted
-  source_files:
-    - {{ test_root }}
   imports:
     - testtools
     - testtools.assertions
@@ -108,8 +108,8 @@ test:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
     - pip install fixtures testscenarios
-    - pytest -v --tb=short {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ skip_keywords | join(' or ') }})"  # [not win]
-    - pytest -v --tb=short {{ test_root }}{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ (skip_keywords + skip_keywords_win64) | join(' or ') }})"  # [win]
+    - pytest -v --tb=short tests/{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ skip_keywords | join(' or ') }})"  # [not win]
+    - pytest -v --tb=short tests/{% for file in skip_files %} --ignore={{ file }}{% endfor %} -k "not ({{ (skip_keywords + skip_keywords_win64) | join(' or ') }})"  # [win]
 
 about:
   home: https://github.com/testing-cabal/testtools
